@@ -39,13 +39,23 @@ PlayerGame.Function <- function(URLString) {
                             t(sapply(nfl.json[[1]][[1]]$stats$receiving, c))),
                  data.frame(Team = nfl.json[[1]][[2]]$abbr,
                             t(sapply(nfl.json[[1]][[2]]$stats$receiving, c))))
-  dffumb <- rbind(data.frame(Team = nfl.json[[1]][[1]]$abbr,
-                             t(sapply(nfl.json[[1]][[1]]$stats$fumbles, c))),
-                data.frame(Team = nfl.json[[1]][[2]]$abbr,
-                           t(sapply(nfl.json[[1]][[2]]$stats$fumbles, c))))
   
-  if (nrow(dffumb) == 0) {
+  if (is.null(nfl.json[[1]][[1]]$stats$fumbles) & 
+      is.null(nfl.json[[1]][[2]]$stats$fumbles)) {
     dffumb <- NULL
+  }
+  
+  else if (is.null(nfl.json[[1]][[1]]$stats$fumbles)) {
+    dffumb <- data.frame(Team = nfl.json[[1]][[2]]$abbr,
+                               t(sapply(nfl.json[[1]][[2]]$stats$fumbles, c)))
+  }
+  
+  else if (is.null(nfl.json[[1]][[2]]$stats$fumbles)) {
+    dffumb <- data.frame(Team = nfl.json[[1]][[1]]$abbr,
+                         t(sapply(nfl.json[[1]][[1]]$stats$fumbles, c)))
+  }
+  
+  if (is.null(dffumb)) {
     
     # Initialize a new variable with the player IDs
     dfpass$playerID <- rownames(dfpass)
@@ -82,7 +92,7 @@ PlayerGame.Function <- function(URLString) {
   list(dfpass, dfrush, dfrec, dffumb))
   }
   
-  final.df <- data.frame(final.df[,1],
+  final.df <- data.frame(Team = final.df[,1],
                     sapply(final.df[,-1], 
                            function(x) ifelse((x == "NULL" | is.na(x)), 0, x)))
   rownames(final.df) <- NULL
@@ -144,6 +154,20 @@ nfl.data.urltest <- "http://www.nfl.com/liveupdate/game-center/2013090800/201309
 
 PlayerGameTest <- PlayerGame.Function(nfl.data.urltest)
 
+PlayerGame.Function(gameURLs[8])
+
+dim(PlayerGame.Function(nfl.data.url2))
+dim(PlayerGameTest)
+
+
+gameIDS <- Extracting_NFL_GameIDs(2010)
+gameURLs <- sapply(gameIDS, Proper.PBP.URL.Formatting)
+
+head(gameURLs)
+
+TESTGame <- lapply(gameURLs[1:8], FUN = PlayerGame.Function)
+
+do.call(rbind, TESTGame)
 
 
 SeasonPlayerGame <- function(Year) {
@@ -159,8 +183,13 @@ SeasonPlayerGame <- function(Year) {
   #
   gameIDS <- Extracting_NFL_GameIDs(Year)
   gameURLs <- sapply(gameIDS, Proper.PBP.URL.Formatting)
-  playergameseason.unformatted <- lapply(gameURLs, FUN = PlayerGame.Function)
   
+  sapply(gameURLs[1:5], FUN = PlayerGame.Function)
+  
+  print("CHECK")
+  playergameseason.unformatted <- sapply(gameURLs[1:5], FUN = PlayerGame.Function)
+  
+  print("CHECK")
   # Rowbinding all the games from the specified season
   
   playergameseason <- do.call(rbind, playergameseason.unformatted)
