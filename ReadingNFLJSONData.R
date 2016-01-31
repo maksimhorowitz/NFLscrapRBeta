@@ -724,6 +724,9 @@ Extracting_NFL_GameIDs <- function(Year) {
   gameIDList
 }
 
+Games2013 <- Extracting_NFL_GameIDs(2013)
+
+
 ## Intermediate function  ##
 # Used in final data pull #
 Proper.PBP.URL.Formatting <- function(GameID) {
@@ -738,6 +741,7 @@ Proper.PBP.URL.Formatting <- function(GameID) {
         GameID,"_gtd.json", sep = "")
 }
 
+Game20151to5 <- sapply(Games2013[1:5], Proper.PBP.URL.Formatting)
 
 Season.PlaybyPlay.Data <- function(Year) {
   # This function outputs all plays of an entire season in one dataframe.  It 

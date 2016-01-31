@@ -87,3 +87,16 @@ grid.arrange(qbsplot2010,
              qbsplot2011,
              qbsplot2012,
              qbsplot2013, nrow = 2, ncol = 2)
+
+## Combining all playergames from 2011-2014
+
+
+# Combining them into one dataframe
+
+PlayerGame10to14 <- rbind(PlayerGame2010, PlayerGame2011, PlayerGame2012,
+                          PlayerGame2013, PlayerGame2014)
+PlayerGame10to14 <- data.frame(PlayerGame10to14)
+
+# Writing the CSV
+
+write.csv(PlayerGame10to14, file = "PlayerGame10to14.csv")

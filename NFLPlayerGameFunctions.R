@@ -40,17 +40,32 @@ PlayerGame.Function <- function(URLString) {
                  data.frame(Team = nfl.json[[1]][[2]]$abbr,
                             t(sapply(nfl.json[[1]][[2]]$stats$receiving, c))))
   
-  if (is.null(nfl.json[[1]][[1]]$stats$fumbles) & 
-      is.null(nfl.json[[1]][[2]]$stats$fumbles)) {
+
+  # Case when both teams have at least one fumble
+  if (length(nfl.json[[1]][[1]]$stats$fumbles) > 0 & 
+        length(nfl.json[[1]][[2]]$stats$fumbles) > 0 ) {
+    
+        dffumb <- rbind(data.frame(Team = nfl.json[[1]][[1]]$abbr,
+                             t(sapply(nfl.json[[1]][[1]]$stats$fumbles, c))),
+                  data.frame(Team = nfl.json[[1]][[2]]$abbr,
+                             t(sapply(nfl.json[[1]][[2]]$stats$fumbles, c))))
+  }
+  
+  # Case when there are no fumbles for either team
+  else if (length(nfl.json[[1]][[1]]$stats$fumbles) == 0 & 
+             length(nfl.json[[1]][[2]]$stats$fumbles) == 0 ) {
     dffumb <- NULL
   }
   
-  else if (is.null(nfl.json[[1]][[1]]$stats$fumbles)) {
+  # Case when team 2 fumbles but team 1 does not 
+  else if (length(nfl.json[[1]][[1]]$stats$fumbles) == 0 & 
+             length(nfl.json[[1]][[2]]$stats$fumbles) > 0) {
     dffumb <- data.frame(Team = nfl.json[[1]][[2]]$abbr,
                                t(sapply(nfl.json[[1]][[2]]$stats$fumbles, c)))
   }
   
-  else if (is.null(nfl.json[[1]][[2]]$stats$fumbles)) {
+  # Case when team 1 fumbles but team 2 does not 
+  else {
     dffumb <- data.frame(Team = nfl.json[[1]][[1]]$abbr,
                          t(sapply(nfl.json[[1]][[1]]$stats$fumbles, c)))
   }
@@ -77,7 +92,8 @@ PlayerGame.Function <- function(URLString) {
   }
   
   else {
-  colnames(dffumb) <- c("Team", "name", "totalfumbs", "recfumbs", "totalrecfumbs",
+  colnames(dffumb) <- c("Team", "name", "totalfumbs", "recfumbs", 
+                        "totalrecfumbs",
                        "fumbyds", "fumbslost")
   # Initialize a new variable with the player IDs
   dfpass$playerID <- rownames(dfpass)
@@ -150,24 +166,10 @@ PlayerGame.Function <- function(URLString) {
   final.df2
 }
 
-nfl.data.urltest <- "http://www.nfl.com/liveupdate/game-center/2013090800/2013090800_gtd.json"
+nfl.data.urltest <- 
+      "http://www.nfl.com/liveupdate/game-center/2013090800/2013090800_gtd.json"
 
-PlayerGameTest <- PlayerGame.Function(nfl.data.urltest)
-
-PlayerGame.Function(gameURLs[8])
-
-dim(PlayerGame.Function(nfl.data.url2))
-dim(PlayerGameTest)
-
-
-gameIDS <- Extracting_NFL_GameIDs(2010)
-gameURLs <- sapply(gameIDS, Proper.PBP.URL.Formatting)
-
-head(gameURLs)
-
-TESTGame <- lapply(gameURLs[1:8], FUN = PlayerGame.Function)
-
-do.call(rbind, TESTGame)
+PlayerGameTest <- PlayerGame.Function(gameURLs[17])
 
 
 SeasonPlayerGame <- function(Year) {
@@ -184,10 +186,8 @@ SeasonPlayerGame <- function(Year) {
   gameIDS <- Extracting_NFL_GameIDs(Year)
   gameURLs <- sapply(gameIDS, Proper.PBP.URL.Formatting)
   
-  sapply(gameURLs[1:5], FUN = PlayerGame.Function)
-  
   print("CHECK")
-  playergameseason.unformatted <- sapply(gameURLs[1:5], FUN = PlayerGame.Function)
+  playergameseason.unformatted <- lapply(gameURLs, FUN = PlayerGame.Function)
   
   print("CHECK")
   # Rowbinding all the games from the specified season
@@ -198,7 +198,6 @@ SeasonPlayerGame <- function(Year) {
   playergameseason
 }
 
-sapply(PlayerGame2010, class)
 
 # Here we collect the playergame data for all games from 2010-2014
 
@@ -207,31 +206,18 @@ PlayerGame2011 <- SeasonPlayerGame(2011)
 PlayerGame2012 <- SeasonPlayerGame(2012)
 PlayerGame2013 <- SeasonPlayerGame(2013)
 PlayerGame2014 <- SeasonPlayerGame(2014)
+PlayerGame2015 <- SeasonPlayerGame(2015)
 
-### Player Season Function ###
+### Player Season Stats Function ###
 
-PlayerSeason.Function <- function(Year) {
+PlayerSeasonStats.Function <- function(Year) {
   
   PlayerData.Year <- SeasonPlayerGame(Year)
   
-  TestSeasonAgg <- ddply(PlayerData.Year[,-c(1,2)], .(playerID, name), numcolwise(sum))
-  
+  TestSeasonAgg <- ddply(PlayerData.Year[,-c(1,2)], 
+                         .(Team, playerID, name), 
+                         numcolwise(sum))
 }
 
-PlayerSeason.Function()
 
-TestSeasonAgg <- ddply(PlayerGame2010[,-c(1,2)], .(playerID, name), numcolwise(sum))
-
-
-
-
-# Combining them into one dataframe
-
-PlayerGame10to14 <- rbind(PlayerGame2010, PlayerGame2011, PlayerGame2012,
-                          PlayerGame2013, PlayerGame2014)
-PlayerGame10to14 <- data.frame(PlayerGame10to14)
-
-# Writing the CSV
-
-write.csv(PlayerGame10to14, file = "PlayerGame10to14.csv")
 
