@@ -1,5 +1,7 @@
 ######## Code Below is Associated Game and Roster Functions #########
 
+## All Games in one season
+
 SeasonAllGames <- function(Season) {
   
   gameIDs <- Extracting_NFL_GameIDs(Season)
@@ -25,9 +27,12 @@ SeasonAllGames <- function(Season) {
   
   # Output Dataframe
 
-  data.frame(date = date, home = teams[,1], away = teams[,2])
+  data.frame(GameID = gameIDs, date = date, home = teams[,1], away = teams[,2])
 }
 
 system.time(allgames2012 <- SeasonAllGames(2012))
+
+## Team Season Rosters
+
 
 
