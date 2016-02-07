@@ -6,8 +6,10 @@ library(RJSONIO)
 library(RCurl)
 library(stringr)
 library(lubridate)
-
-source("ReadingNFLJSONData.R")
+library(dplyr)
+library(stringr)
+library(reshape)
+library(reshape2)
 
 
 PlayerGame.Function <- function(URLString) {
@@ -24,8 +26,8 @@ PlayerGame.Function <- function(URLString) {
   # Converting URL into readable JSON format
   nfl.json <- fromJSON(getURL(URLString))
   
-  # Here we build the dataframes for the rushing, passing, receving, and 
-  # fumbling stats
+  # Here we build the dataframes for the rushing, passing, receving, defense,
+  # and fumbling stats
   
   dfpass <- rbind(data.frame(Team = nfl.json[[1]][[1]]$abbr,
                              t(sapply(nfl.json[[1]][[1]]$stats$passing, c))),
@@ -39,7 +41,10 @@ PlayerGame.Function <- function(URLString) {
                             t(sapply(nfl.json[[1]][[1]]$stats$receiving, c))),
                  data.frame(Team = nfl.json[[1]][[2]]$abbr,
                             t(sapply(nfl.json[[1]][[2]]$stats$receiving, c))))
-  
+  dfdef <- rbind(data.frame(Team = nfl.json[[1]][[1]]$abbr,
+                            t(sapply(nfl.json[[1]][[1]]$stats$defense, c))),
+                 data.frame(Team = nfl.json[[1]][[2]]$abbr,
+                            t(sapply(nfl.json[[1]][[2]]$stats$defense, c))))
 
   # Case when both teams have at least one fumble
   if (length(nfl.json[[1]][[1]]$stats$fumbles) > 0 & 
@@ -71,17 +76,18 @@ PlayerGame.Function <- function(URLString) {
   }
   
   if (is.null(dffumb)) {
-    
+
     # Initialize a new variable with the player IDs
     dfpass$playerID <- rownames(dfpass)
     dfrush$playerID <- rownames(dfrush)
     dfrec$playerID <- rownames(dfrec)
+    dfdef$playerID <- rownames(dfdef)
     
     # This stage is where we merge all the dataframes together so each player 
     # has one line
     final.df <- Reduce(function(x, y) 
-    {merge(x, y, by = c("Team", "playerID", "name"),all=TRUE)},
-    list(dfpass, dfrush, dfrec))
+    {merge(x, y, by = c("Team", "playerID", "name"),all=TRUE, sort = FALSE)},
+    list(dfpass, dfrush, dfrec, dfdef))
     
     # Adding Fumble columns with 0's due to no occurance of fumbles in game
     final.df$totalfumbs <- 0
@@ -92,20 +98,24 @@ PlayerGame.Function <- function(URLString) {
   }
   
   else {
-  colnames(dffumb) <- c("Team", "name", "totalfumbs", "recfumbs", 
-                        "totalrecfumbs",
-                       "fumbyds", "fumbslost")
+    
+  # Renaming for dffumb Columns
+    colnames(dffumb) <- c("Team", "name", "totalfumbs", "recfumbs", 
+                        "totalrecfumbs","fumbyds", "fumbslost")
+  
   # Initialize a new variable with the player IDs
   dfpass$playerID <- rownames(dfpass)
   dfrush$playerID <- rownames(dfrush)
   dfrec$playerID <- rownames(dfrec)
   dffumb$playerID <- rownames(dffumb)
+  dfdef$playerID <- rownames(dfdef)
 
   # This stage is where we merge all the dataframes together so each player 
-  # has one line
-  final.df <- Reduce(function(x, y) 
-  {merge(x, y, by = c("Team","playerID", "name"),all=TRUE)},
-  list(dfpass, dfrush, dfrec, dffumb))
+  # has one line 
+  
+  final.df <- Reduce(function(x,y) {
+    merge(x, y, by = c("Team", "playerID", "name"), all = TRUE, sort = FALSE)},
+      list(dfpass, dfrush, dfrec, dffumb, dfdef))
   }
   
   final.df <- data.frame(Team = final.df[,1],
@@ -128,7 +138,6 @@ PlayerGame.Function <- function(URLString) {
   # Output dataframe which has the gameID, date of game, and the player info
   # and statistics 
   final.df2 <- data.frame(gameID, date, final.df)
-  
   
   # Unlist the listed variables in order to return the output dataframe in a 
   # friendlier format
@@ -162,17 +171,33 @@ PlayerGame.Function <- function(URLString) {
   final.df2$totalrecfumbs <- unlist(final.df2$totalrecfumbs)
   final.df2$fumbyds <- unlist(final.df2$fumbyds)
   final.df2$fumbslost <- unlist(final.df2$fumbslost)
+  final.df2$tkl <- unlist(final.df2$tkl)
+  final.df2$ast <- unlist(final.df2$ast)
+  final.df2$sk <- unlist(final.df2$sk)
+  final.df2$int <- unlist(final.df2$int)
+  final.df2$ffum <- unlist(final.df2$ffum)
+
+  colnames(final.df2)<- c("gameID", "date", "team", "playerID", "name",
+                           "passatt","compl","passyds", "passtds", "passint", 
+                           "passtwoptattempts", "passtwoptmade", "rushatt",
+                           "rushyds", "rushtds", "rushlong", "rushlongtd",
+                           "rushtwoptattp", "rushtwoptmade", "recpt", "recyds", 
+                           "rectds", "reclong", "reclongtd",
+                           "rectwoptatt", "rectwoptmade", "totalfumbs",
+                           "fumbsrecovered","totalrecfumbs",
+                           "fumbydds", "fumbslost", "tackles", "assistedtkls",
+                           "sacks", "defint", "forcedfumbs")
   
-  final.df2
+  final.df2[order(final.df2$date, final.df2$team),]
 }
 
 nfl.data.urltest <- 
       "http://www.nfl.com/liveupdate/game-center/2013090800/2013090800_gtd.json"
 
-PlayerGameTest <- PlayerGame.Function(gameURLs[17])
+PlayerGameTest <- PlayerGame.Function(gameURLs[45])
 
 
-SeasonPlayerGame <- function(Year) {
+SeasonPlayerGame <- function(Season) {
   # This function outputs a single dataframe containing all rushing, passing,
   # receiving, and fumble statistics for each player in each game.  Each player 
   # is assigned one line associated wih their statisitcs per game
@@ -183,19 +208,17 @@ SeasonPlayerGame <- function(Year) {
   #      statistics for each player that recorded such a statistic in everygame 
   #      in a season
   #
-  gameIDS <- Extracting_NFL_GameIDs(Year)
+  gameIDS <- Extracting_NFL_GameIDs(Season)
   gameURLs <- sapply(gameIDS, Proper.PBP.URL.Formatting)
   
-  print("CHECK")
   playergameseason.unformatted <- lapply(gameURLs, FUN = PlayerGame.Function)
   
-  print("CHECK")
   # Rowbinding all the games from the specified season
   
   playergameseason <- do.call(rbind, playergameseason.unformatted)
   
   # Final output dataframe
-  playergameseason
+  data.frame(Year = Season, playergameseason)
 }
 
 
@@ -207,19 +230,35 @@ PlayerGame2012 <- SeasonPlayerGame(2012)
 PlayerGame2013 <- SeasonPlayerGame(2013)
 PlayerGame2014 <- SeasonPlayerGame(2014)
 PlayerGame2015 <- SeasonPlayerGame(2015)
+PlayerGame2016 <- SeasonPlayerGame(2015)
+
+
 
 ### Player Season Stats Function ###
 
-PlayerSeasonStats.Function <- function(Year) {
+PlayerSeasonStats.Function <- function(Season) {
   
-  PlayerData.Year <- SeasonPlayerGame(Year)
+  PlayerData.Year <- SeasonPlayerGame(Season)
   
-  TestSeasonAgg <- ddply(PlayerData.Year[,-c(1,2)], 
+  SeasonSumAgg <- ddply(PlayerData.Year[,-c(1, 2, 3, 16, 23)], 
                          .(Team, playerID, name), 
                          numcolwise(sum))
+  
+  # Here we find the max "long run" and max "long reception"
+  SeasonMaxAgg <- ddply(PlayerData.Year[,-c(1, 2, 3, 16, 23)], 
+                        .(Team, playerID, name), 
+                        numcolwise(sum))
+  
+  data.frame(Year = Season, SeasonAgg)
 }
 
+aggstats2010 <- PlayerSeasonStats.Function(2010)
+aggstats2011 <- PlayerSeasonStats.Function(2011)
+aggstats2012 <- PlayerSeasonStats.Function(2012)
+aggstats2013 <- PlayerSeasonStats.Function(2013)
+aggstats2014 <- PlayerSeasonStats.Function(2014)
+aggstats2015 <- PlayerSeasonStats.Function(2015)
 
 
-
+bryanqbdata <- subset(aggstats2015, att.x >= 200)
 

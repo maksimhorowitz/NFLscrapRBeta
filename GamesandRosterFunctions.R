@@ -5,7 +5,7 @@
 SeasonAllGames <- function(Season) {
   
   gameIDs <- Extracting_NFL_GameIDs(Season)
-  gameURLs <- sapply(gameIDS, Proper.PBP.URL.Formatting)
+  gameURLs <- sapply(gameIDs, Proper.PBP.URL.Formatting)
   
   # Game Dates
   year <- substr(gameIDs, start = 1, stop = 4)

@@ -231,16 +231,16 @@ Drive.Summary.Function <- function(URLString) {
   nfl.json.data <- fromJSON(getURL(URLString))
   
   # Starting the splicing
-  drive.Data <- data.frame(do.call(rbind, (nfl.json[[1]]$drives)))
-  start.Data <- data.frame(do.call(rbind, (Drive.Data$start))) 
-  colnames(Start.Data) <- c("StartQrt", "StartTime", "StartYardln", "StartTeam")
-  end.Data <- data.frame(do.call(rbind, (Drive.Data$end)))
-  colnames(End.Data) <- c("EndQrt", "EndTime", "EndYardln", "EndTeam")
-  start.index <- which(colnames(Drive.Data) == "start")
-  end.index <- which(colnames(Drive.Data) == "end")
-  drive.Data.Final <- cbind(Drive.Data[, -c(start.index,end.index)], 
-                            Start.Data, End.Data)
-  drive.Data.Final[-nrow(Drive.Data), ]
+  drive.Data <- data.frame(do.call(rbind, (nfl.json.data[[1]]$drives)))
+  start.Data <- data.frame(do.call(rbind, (drive.Data$start))) 
+  colnames(start.Data) <- c("StartQrt", "StartTime", "StartYardln", "StartTeam")
+  end.Data <- data.frame(do.call(rbind, (drive.Data$end)))
+  colnames(end.Data) <- c("EndQrt", "EndTime", "EndYardln", "EndTeam")
+  start.index <- which(colnames(drive.Data) == "start")
+  end.index <- which(colnames(drive.Data) == "end")
+  drive.Data.Final <- cbind(drive.Data[, -c(start.index,end.index)], 
+                            start.Data, end.Data)
+  drive.Data.Final[-nrow(drive.Data), -4]
 }
 
 # Example
