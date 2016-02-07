@@ -239,18 +239,24 @@ PlayerGame2016 <- SeasonPlayerGame(2015)
 PlayerSeasonStats.Function <- function(Season) {
   
   PlayerData.Year <- SeasonPlayerGame(Season)
-  
-  SeasonSumAgg <- ddply(PlayerData.Year[,-c(1, 2, 3, 16, 23)], 
-                         .(Team, playerID, name), 
-                         numcolwise(sum))
+                            
+  SeasonSumAgg <- PlayerGame2010 %>% 
+    group_by(Year, team, playerID, name) %>% 
+    summarise_each(funs(sum), -date, -rushlong, -rushlongtd,
+                   -reclong, -reclongtd, -gameID)
   
   # Here we find the max "long run" and max "long reception"
-  SeasonMaxAgg <- ddply(PlayerData.Year[,-c(1, 2, 3, 16, 23)], 
-                        .(Team, playerID, name), 
-                        numcolwise(sum))
   
-  data.frame(Year = Season, SeasonAgg)
+  SeasonMaxAgg <- PlayerGame2010 %>% 
+    group_by(Year, team, playerID, name) %>% 
+    summarise_each(funs(max), rushlong, rushlongtd,
+                   reclong, reclongtd)
+  
+  # Merging the Two datasets
+  
+  merge(SeasonSumAgg, SeasonMaxAgg, by = c("Year", "team", "playerID", "name"))
 }
+
 
 aggstats2010 <- PlayerSeasonStats.Function(2010)
 aggstats2011 <- PlayerSeasonStats.Function(2011)
@@ -260,5 +266,4 @@ aggstats2014 <- PlayerSeasonStats.Function(2014)
 aggstats2015 <- PlayerSeasonStats.Function(2015)
 
 
-bryanqbdata <- subset(aggstats2015, att.x >= 200)
 
