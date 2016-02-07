@@ -81,118 +81,115 @@ NFL.JSON.BoxScore.Pull <- function(URLString,
   if (home == TRUE) {
     homeTeamName <- nfl.json.data[[1]]$home$abbr
     # Passing Stats
-    qbStats <- data.frame(date, gameID, homeTeamName, 
+    qbStats <- data.frame(stat = "passing", date, gameID, homeTeamName, 
                           t(sapply(nfl.json.data[[1]]$home$stats$passing, c)))
     qbStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$home$stats$passing, 
                                           c)))
     # Running Stats
-    rbStats <- data.frame(date, gameID, homeTeamName, 
+    rbStats <- data.frame(stat = "rush", date, gameID, homeTeamName, 
                           t(sapply(nfl.json.data[[1]]$home$stats$rushing, c)))
     rbStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$home$stats$rushing, 
                                           c)))
     # Receiving Stats
-    wrStats <- data.frame(date, gameID, homeTeamName, 
+    wrStats <- data.frame(stat = "receiving", date, gameID, homeTeamName, 
                           t(sapply(nfl.json.data[[1]]$home$stats$receiving, c)))
     wrStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$home$stats$receiving, 
                                           c)))
     # Defensive Stats
-    defStats <- data.frame(date, gameID, homeTeamName, 
+    defStats <- data.frame(stat = "defense", date, gameID, homeTeamName, 
                            t(sapply(nfl.json.data[[1]]$home$stats$defense, c)))
     defStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$home$stats$defense, 
                                            c)))
     # Kicking Stats
-    kickerStats <- data.frame(date, gameID, homeTeamName, 
+    kickerStats <- data.frame(stat = "kicking", date, gameID, homeTeamName, 
                               t(sapply(nfl.json.data[[1]]$home$stats$kicking, 
                                        c)))
     kickerStats$playerID <- rownames(t(
       sapply(nfl.json.data[[1]]$home$stats$kicking, 
              c)))
     # Fumble Stats
-    fumbStats <- data.frame(date, gameID, homeTeamName, 
+    fumbStats <- data.frame(stat = "fumbles", date, gameID, homeTeamName, 
                             t(sapply(nfl.json.data[[1]]$home$stats$fumbles, c)))
     fumbStats$playerID <- rownames(t(
       sapply(nfl.json.data[[1]]$home$stats$fumbles, 
              c)))
     # Kick Return Stats
-    krStats <- data.frame(date, gameID, homeTeamName, 
+    krStats <- data.frame(stat = "kickreturn", date, gameID, homeTeamName, 
                           t(sapply(nfl.json.data[[1]]$home$stats$kickret, c)))
     krStats$playerID <- rownames(t(
       sapply(nfl.json.data[[1]]$home$stats$kickret, 
              c)))
     # Punt Return Stats
-    prStats <- data.frame(date, gameID, homeTeamName, 
+    prStats <- data.frame(stat = "puntreturn", date, gameID, homeTeamName, 
                           t(sapply(nfl.json.data[[1]]$home$stats$puntret, c)))
     prStats$playerID <- rownames(t(
       sapply(nfl.json.data[[1]]$home$stats$puntret, 
              c)))
     # List of Stats
-    homeTeam.Stats <- list(qbStats, rbStats, wrStats, defStats, kickerStats, 
+    homeTeam.Stats <- rbind(qbStats, rbStats, wrStats, defStats, kickerStats, 
                            fumbStats, krStats, prStats)
-    names(homeTeam.Stats) <- c("Passing", "Rushing", "Receiving", "Defense", 
-                               "Kicking","Fumbles", "Kick Return", "Punt Return"
-    )
     homeTeam.Stats
   } else {
+    
     awayTeamName <- nfl.json.data[[1]]$away$abbr
-    qbAwayStats <- data.frame(gameID, awayTeamName, 
+    
+    # Passing AwayStats
+    qbAwayStats <- data.frame(stat = "passing", gameID, awayTeamName, 
                               t(sapply(nfl.json.data[[1]]$away$stats$passing, 
                                        c)))
     qbAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$passing, 
                                               c)))
     # Running AwayStats
-    rbAwayStats <- data.frame(date, gameID, awayTeamName, 
+    rbAwayStats <- data.frame(stat = "rushing", date, gameID, awayTeamName, 
                               t(sapply(nfl.json.data[[1]]$away$stats$rushing, 
                                        c)))
     rbAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$rushing, 
                                               c)))
     # Receiving AwayStats
-    wrAwayStats <- data.frame(date, gameID, awayTeamName, 
+    wrAwayStats <- data.frame(stat = "receiving", date, gameID, awayTeamName, 
                               t(sapply(nfl.json.data[[1]]$away$stats$receiving, 
                                        c)))
     wrAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$receiving, 
                                               c)))
     # Defensive AwayStats
-    defAwayStats <- data.frame(date, gameID, awayTeamName, 
+    defAwayStats <- data.frame(stat = "defense", date, gameID, awayTeamName, 
                                t(sapply(nfl.json.data[[1]]$away$stats$defense, 
                                         c)))
     defAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$defense, 
                                                c)))
     # Kicking AwayStats
-    kickerAwayStats <- data.frame(date, gameID, awayTeamName, 
+    kickerAwayStats <- data.frame(stat = "kicking", date, gameID, awayTeamName, 
                                   t(sapply(nfl.json.data[[1]]$away$stats$kicking
                                            , c)))
     kickerAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$kicking, 
                                                   c)))
     # Fumble AwayStats
-    fumbAwayStats <- data.frame(date, gameID, awayTeamName, 
+    fumbAwayStats <- data.frame(stat = "fumbles", date, gameID, awayTeamName, 
                                 t(sapply(nfl.json.data[[1]]$away$stats$fumbles, 
                                          c)))
     fumbAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$fumbles, 
                                                 c)))
     # Kick Return AwayStats
-    krAwayStats <- data.frame(date, gameID, awayTeamName,
+    krAwayStats <- data.frame(stat = "kickreturn", date, gameID, awayTeamName,
                               t(sapply(nfl.json.data[[1]]$away$stats$kickret, 
                                        c)))
     krAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$kickret, 
                                               c)))
     # Punt Return AwayStats
-    prAwayStats <- data.frame(date, gameID, awayTeamName, 
+    prAwayStats <- data.frame(stat = "puntreturn", date, gameID, awayTeamName, 
                               t(sapply(nfl.json.data[[1]]$away$stats$puntret, 
                                        c)))
     prAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$puntret, 
                                               c)))
     # List of AwayStats
-    awayTeamStats <- list(qbAwayStats, rbAwayStats, wrAwayStats, defAwayStats, 
+    awayTeamStats <- rbind(qbAwayStats, rbAwayStats, wrAwayStats, defAwayStats, 
                           kickerAwayStats, fumbAwayStats, krAwayStats, 
                           prAwayStats)
-    names(awayTeamStats) <- c("Passing", "Rushing", "Receiving", "Defense", 
-                              "Kicking", "Fumbles", "Kick Return", 
-                              "Punt Return")
     awayTeamStats
   }
 }
 
-NFL.JSON.BoxScore.Pull(nfl.data.url, home = T) # Example 
+NFL.JSON.BoxScore.Pull(nfl.data.urltest, home = T) # Example 
 
 
 ##############################

@@ -34,5 +34,16 @@ system.time(allgames2012 <- SeasonAllGames(2012))
 
 ## Team Season Rosters
 
+SeasonRosters <- function(Season, TeamInt) {
+  
+  TeamRosters1 <- subset(SeasonPlayerGame(Season), team == TeamInt)
 
+  TeamRoster <- TeamRosters1 %>% group_by(Year, team, playerID, name) %>% 
+                  summarize(length(playerID))
+  
+  colnames(TeamRoster)[ncol(TeamRoster)] <- "gamesplayed"
+           
+  TeamRoster
+}
 
+system.time(bal2012 <- SeasonRosters(2012, "BAL"))
