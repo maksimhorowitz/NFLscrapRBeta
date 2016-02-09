@@ -126,8 +126,11 @@ NFL.JSON.BoxScore.Pull <- function(URLString,
       sapply(nfl.json.data[[1]]$home$stats$puntret, 
              c)))
     # List of Stats
-    homeTeam.Stats <- rbind(qbStats, rbStats, wrStats, defStats, kickerStats, 
-                           fumbStats, krStats, prStats)
+    homeTeam.Stats <- list(HomePassing = qbStats, HomeRushing = rbStats, 
+                           HomeReceiving = wrStats, HomeDef = defStats, 
+                           HomeKicking = kickerStats, 
+                           HomeFumbles = fumbStats, HomeKR = krStats, 
+                           HomePR = prStats)
     homeTeam.Stats
   } else {
     
@@ -182,14 +185,15 @@ NFL.JSON.BoxScore.Pull <- function(URLString,
     prAwayStats$playerID <- rownames(t(sapply(nfl.json.data[[1]]$away$stats$puntret, 
                                               c)))
     # List of AwayStats
-    awayTeamStats <- rbind(qbAwayStats, rbAwayStats, wrAwayStats, defAwayStats, 
-                          kickerAwayStats, fumbAwayStats, krAwayStats, 
-                          prAwayStats)
+    awayTeamStats <- list(AwayPassing = qbAwayStats, AwayRushing = rbAwayStats, 
+                          AwayReceiving = wrAwayStats, AwayDef = defAwayStats, 
+                          AwayKicking = kickerAwayStats, AwayFumb = fumbAwayStats, 
+                          AwayKR =  krAwayStats, AwayPR = prAwayStats)
     awayTeamStats
   }
 }
 
-NFL.JSON.BoxScore.Pull(nfl.data.urltest, home = T) # Example 
+NFL.JSON.BoxScore.Pull(nfl.data.url3, home = F) # Example 
 
 
 ##############################
@@ -756,7 +760,7 @@ Extracting_NFL_GameIDs <- function(Year) {
   gameIDList
 }
 
-Games2013 <- Extracting_NFL_GameIDs(2013)
+Games2015 <- Extracting_NFL_GameIDs(2015)
 
 
 ## Intermediate function  ##
