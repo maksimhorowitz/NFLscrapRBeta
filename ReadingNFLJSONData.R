@@ -354,6 +354,11 @@ Viewable.PBP.Function <- function(URLString) {
                               as.numeric(str_extract(Penalty.Yards.Step1, 
                                                      "[0-9]{1,2}")), 0)
   
+  # Modifying Down Column
+  
+  PBP$down <- unlist(PBP$down)
+  PBP$down[which(PBP$down == 0)] <- NA
+  
   #   Defenseive Team Column
   
   PBP$DefensiveTeam <- NA
@@ -365,6 +370,10 @@ Viewable.PBP.Function <- function(URLString) {
   
   PBP$DefensiveTeam[which(PBP$posteam == T1)] <- T2
   PBP$DefensiveTeam[which(PBP$posteam == T2)] <- T1
+  
+  ## Type of Play ##
+  
+  PBP$PlayType <- NA
   
   #   Players Involved 
   
@@ -406,11 +415,6 @@ Viewable.PBP.Function <- function(URLString) {
   
   PBP$Tackler1 <- Tacklers1
   PBP$Tackler2 <- Tacklers2
-  
-  
-  ## Type of Play ##
-  
-  PBP$PlayType <- NA
   
   #     Pass Plays
   
@@ -479,10 +483,20 @@ Viewable.PBP.Function <- function(URLString) {
   
   PBP$PlayType[fieldgoal] <- "Field Goal"
   
+  # Field Goal Distance 
+  
+  fieldgoalresult.prelim <- sapply(PBP$desc[fieldgoal], str_extract, 
+                            pattern = "[0-9]{1,2} yard field goal")
+  fieldgoalresult <- str_extract(fieldgoalresult.prelim, "[0-9]{1,2}")
+  
+  PBP$FieldGoalDistance <- NA
+  PBP$FieldGoalDistance[fieldgoal] <- fieldgoalresult
+  
   ## Field Goal Result
   PBP$FieldGoalResult <- NA
   PBP$FieldGoalResult[missed.FG] <- "No Good"
   PBP$FieldGoalResult[setdiff(fieldgoal,missed.FG)] <- "Good"
+  
   
   #     Extra Point
   Made.Extra.Point.Plays <- which(sapply(PBP$desc, regexpr,
@@ -650,11 +664,12 @@ Viewable.PBP.Function <- function(URLString) {
   PBP$DefTeamScore <- NA
   
   ### Inputting Scores
+  
   PBP$PosTeamScore[homeTeamPos] <- teamHomeScore[homeTeamPos]
   PBP$PosTeamScore[awayTeamPos] <- teamAwayScore[awayTeamPos]
   
   PBP$DefTeamScore[homeTeamDef] <- teamHomeScore[homeTeamDef]
-  PBP$DefTeamScore[awayTeamDef] <- teamHomeScore[awayTeamDef]
+  PBP$DefTeamScore[awayTeamDef] <- teamAwayScore[awayTeamDef]
   
   # Score Differential and Abs Score Differential 
   
@@ -665,8 +680,28 @@ Viewable.PBP.Function <- function(URLString) {
   
   PBP$GoalToGo <- ifelse(PBP$posteam != PBP$SideofField & PBP$yrdln <= 10, 1, 0)
   ##################
+  
+  ## Unlisting Listed Columns 
+  
+  PBP$sp <- unlist(PBP$sp)
+  PBP$qtr <- unlist(PBP$qtr)
+  PBP$time <- unlist(PBP$time)
+  PBP$ydstogo <- unlist(PBP$ydstogo)
+  PBP$ydsnet <- unlist(PBP$ydsnet)
+  PBP$posteam <- unlist(PBP$posteam)
+  PBP$desc <- unlist(PBP$desc)
+  
   ## Final OutPut ##
-  PBP
+  PBP[,c("Date", "GameCode", "Drive", "qtr", "down", "time", "TimeUnder", 
+         "SideofField", "yrdln", "ydstogo", "ydsnet", "GoalToGo", "FirstDown", 
+         "posteam", "DefensiveTeam", "desc", "PlayAttempted", "Yards.Gained", 
+         "sp", "Touchdown", "ExPointResult", "TwoPointConv", "PlayType", 
+         "Passer", "PassAttempt", "PassOutcome", "PassLength", "PassLocation",
+         "InterceptionThrown", "Rusher", "RushAttempt", "RunLocation", "RunGap", 
+         "Receiver", "Reception", "Tackler1", "Tackler2", "FieldGoalResult", 
+         "FieldGoalDistance", "Fumble", "Sack", "Accepted.Penalty", 
+         "Penalty.Yards", "PosTeamScore", "DefTeamScore", "ScoreDiff", 
+         "AbsScoreDiff")]
 }
 
 ## Testing PBP Function on Other Games ##
